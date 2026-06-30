@@ -2,7 +2,8 @@ package waste
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
 	"runtime"
 	"time"
 
@@ -52,8 +53,8 @@ func Network(interval time.Duration, connectionCount int) {
 			}
 		}
 
-		// pick random as main server
-		s := targets[rand.Int31n(int32(len(targets)))]
+		// pick random server using cryptographically secure random
+		s := targets[secureRandInt(int64(len(targets)))]
 
 		pingCtx, cancelPing := context.WithTimeout(context.Background(), networkPingTimeout)
 		err := s.PingTestContext(pingCtx, nil)
@@ -88,4 +89,23 @@ func sleepWithTimeout(d time.Duration) {
 	timer := time.NewTimer(d)
 	defer timer.Stop()
 	<-timer.C
+}
+
+// secureRandInt returns a cryptographically secure random integer in [0, max)
+func secureRandInt(max int64) int64 {
+	if max <= 0 {
+		return 0
+	}
+
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		log.Logf("NET", "Failed to read secure random: %v, using fallback", err)
+		// Fallback: use less ideal but still reasonable method
+		for i := 0; i < 3; i++ {
+			if _, err := rand.Read(b[:]); err == nil {
+				break
+			}
+		}
+	}
+	return int64(binary.BigEndian.Uint64(b[:])) % max
 }
