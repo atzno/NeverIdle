@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/shirou/gopsutil/v4 v4.26.7
-	github.com/showwin/speedtest-go v1.7.11
+	github.com/showwin/speedtest-go v1.8.3
 	go.einride.tech/pid v0.2.0
 	golang.org/x/crypto v0.54.0
 	golang.org/x/sys v0.47.0
